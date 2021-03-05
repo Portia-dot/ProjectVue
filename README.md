@@ -1,4 +1,4 @@
-# hatchway2
+#
 
 ## Project setup
 ```
