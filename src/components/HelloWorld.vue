@@ -1,114 +1,202 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br />
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener"
-        >vue-cli documentation</a
-      >.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel"
-          target="_blank"
-          rel="noopener"
-          >babel</a
+  <div>
+    <b-jumbotron class="container">
+      <div class="studentprofile ">
+        <div class="searchbar">
+          <input
+            class="search"
+            v-model="search"
+            type="text"
+            placeholder="Search by name"
+          />
+          <input
+            class="search2"
+            type="text"
+            placeholder="Search By Tag"
+            v-model="searchTag"
+          />
+        </div>
+        <div
+          class="content d-flex"
+          v-for="student in studentList"
+          :key="student.id"
         >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint"
-          target="_blank"
-          rel="noopener"
-          >eslint</a
-        >
-      </li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li>
-        <a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a>
-      </li>
-      <li>
-        <a href="https://forum.vuejs.org" target="_blank" rel="noopener"
-          >Forum</a
-        >
-      </li>
-      <li>
-        <a href="https://chat.vuejs.org" target="_blank" rel="noopener"
-          >Community Chat</a
-        >
-      </li>
-      <li>
-        <a href="https://twitter.com/vuejs" target="_blank" rel="noopener"
-          >Twitter</a
-        >
-      </li>
-      <li>
-        <a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a>
-      </li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li>
-        <a href="https://router.vuejs.org" target="_blank" rel="noopener"
-          >vue-router</a
-        >
-      </li>
-      <li>
-        <a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a>
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-devtools#vue-devtools"
-          target="_blank"
-          rel="noopener"
-          >vue-devtools</a
-        >
-      </li>
-      <li>
-        <a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener"
-          >vue-loader</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/awesome-vue"
-          target="_blank"
-          rel="noopener"
-          >awesome-vue</a
-        >
-      </li>
-    </ul>
+          <div class="img">
+            <img :src="student.pic" alt="someiame" />
+          </div>
+          <div class="details">
+            <h3>{{ student.firstName + " " + student.lastName }}</h3>
+            <h5>{{ student.company }}</h5>
+            <h5>{{ student.skill }}</h5>
+            <h5>{{ student.email }}</h5>
+            <h5>Average Grade: {{ averageGrade(student) }}</h5>
+            <button v-on:click="isHidden = !isHidden">
+              <i class="fas fa-plus"> </i>
+            </button>
+            <div class="test" v-if="!isHidden">
+              <p>Test 1: {{ student.grades[0] }}</p>
+              <p>Test 2: {{ student.grades[1] }}</p>
+              <p>Test 3: {{ student.grades[2] }}</p>
+              <p>Test 5: {{ student.grades[3] }}</p>
+              <p>Test 5: {{ student.grades[4] }}</p>
+              <p>Test 6: {{ student.grades[5] }}</p>
+              <p>Test 7: {{ student.grades[6] }}</p>
+              <p>Test 8: {{ student.grades[7] }}</p>
+            </div>
+            <div
+              class="input wrapper flex items-center"
+              v-for="(input, index) in tags"
+              :key="
+                `phoneInp
+              ut-${index}`
+              "
+            >
+              <input
+                v-model="input.nameTag"
+                type="text"
+                class="h-10 rounded-lg outline-none p-2"
+                placeholder=" Enter Phone Number"
+                @keyup.enter="addField(input, tags)"
+              />
+            </div>
+            <!-- <ul>
+              <li>
+                {{ input }}
+              </li>
+            </ul>
+            <div
+              v-for="(input, index) in tagsNumber"
+              :key="`phoneInput- ${index}`"
+            >
+              <input
+                v-model="input.phone"
+                type="text"
+                placeholder="Add a Tag"
+                @keyup.enter="addField(input, tagsNumber)"
+              />
+            </div> -->
+          </div>
+        </div>
+      </div>
+      <hr />
+    </b-jumbotron>
   </div>
 </template>
-
 <script>
+import axios from "axios";
 export default {
-  name: "HelloWorld",
-  props: {
-    msg: String
+  data() {
+    return {
+      tags: [{ nameTag: "" }],
+      students: null,
+      search: "",
+      isHidden: true,
+      // todos: [""],
+      todoModel: "",
+      searchTag: ""
+    };
+  },
+  created() {
+    axios
+      .get("https://api.hatchways.io/assessment/students")
+      .then(response => {
+        this.students = response.data.students;
+        console.log(response.data.students);
+      })
+      .catch(error => {
+        console.log("there is an error:" + error.response);
+      });
+  },
+  computed: {
+    studentList() {
+      if (this.search.trim().length > 0) {
+        return this.students.filter(item => {
+          return this.search
+            .toLowerCase()
+            .split(" ")
+            .some(v => item.firstName.toLowerCase().includes(v));
+        });
+      } else {
+        return this.students;
+      }
+    }
+  },
+  methods: {
+    averageGrade(student) {
+      return (
+        student.grades.reduce((total, grade) => (total += parseInt(grade)), 0) /
+        student.grades.length
+      );
+    },
+    addField(value, fieldType) {
+      fieldType.push({ value: "" });
+    },
+    storeTodo() {
+      this.todos.push(this.todoModel);
+    }
   }
 };
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+.container {
+  overflow-y: auto;
+  max-height: 80vh;
+}
+.form-inline {
+  justify-content: center;
+}
+.searchbar {
+  text-align: center;
+  margin-bottom: 30px;
+}
+.studentprofile {
+  border-bottom: 1px solid #dcdcdc;
+}
+img {
+  max-width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 1px solid black;
+  margin-right: 20px;
+  margin-top: 15px;
+}
+input {
+  width: 90%;
+  padding: 10px 8px;
+  margin: 5px 0;
+  border: none;
+  border-bottom: 2px solid gray;
+}
+.content {
+  margin: 10px 20px;
+  border-bottom: 1px solid #dcdcdc;
+}
+hr {
+  border: 1x solid gray;
+}
+button {
+  position: relative;
+  left: 30rem;
+}
+.test,
+.tagsearch {
+  display: block;
 }
 ul {
+  text-decoration: none;
   list-style-type: none;
-  padding: 0;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
+@media only screen and (max-width: 736px) {
+  button {
+    position: absolute;
+    right: 20px;
+  }
 }
-a {
-  color: #42b983;
+@media only screen and (max-width: 820px) {
+  button {
+    position: absolute;
+    right: 20px;
+  }
 }
 </style>
